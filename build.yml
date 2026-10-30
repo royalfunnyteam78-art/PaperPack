@@ -1,0 +1,39 @@
+name: Build Paper Pack (Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get OpenFX SDK
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/AcademySoftwareFoundation/openfx.git openfx
+          Get-ChildItem openfx/include | Select-Object -ExpandProperty Name
+
+      - name: Configure
+        shell: pwsh
+        run: cmake -S . -B build -A x64 -DOFX_ROOT="${{ github.workspace }}/openfx"
+
+      - name: Build
+        shell: pwsh
+        continue-on-error: true
+        run: cmake --build build --config Release
+
+      - name: List results
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path out) { Get-ChildItem out -Recurse -File | Select-Object -ExpandProperty FullName } else { "nothing built" }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PaperPack-Windows
+          path: out
