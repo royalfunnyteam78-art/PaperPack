@@ -112,7 +112,12 @@ private:
             std::array<double, 3> v = {0, 0, 0};
             switch (p.type) {
                 case pp::P_DBL: v[0] = static_cast<OFX::DoubleParam *>(params_[i])->getValueAtTime(t); break;
-                case pp::P_CHOICE: v[0] = static_cast<OFX::ChoiceParam *>(params_[i])->getValueAtTime(t); break;
+                case pp::P_CHOICE: {
+                    int cv = 0;
+                    static_cast<OFX::ChoiceParam *>(params_[i])->getValueAtTime(t, cv);
+                    v[0] = cv;
+                    break;
+                }
                 case pp::P_BOOL: v[0] = static_cast<OFX::BooleanParam *>(params_[i])->getValueAtTime(t) ? 1.0 : 0.0; break;
                 case pp::P_RGB: {
                     double r, g, b;
